@@ -284,6 +284,25 @@ You can imagine feeding in a whole bunch of properties to make segmentation inte
 
 As an additional feature, if your bot sends interactions in the results, such as weblinks (e.g. to sales reports, help docs etc.) then you should consider instrumenting those destinations (websites) using Mixpanel and sending the events to the same project. This will enable you to view entire user journies from inside your bot interaction to external web-based (or other app) interactions.
 
+There are all kinds of ways to think about bot analytics here that would serve to produce quality behavioral insights. You should consider how you test that effectiveness of the interaction UX.
+
+### What next? ###
+
+This is a minimal bot implementation with an emphasis on getting you started with a bot whilst at least putting into place all the elements to enable you to scale it out to production. What's remarkable is how little code is required to get an entire bot/agent/analytics stack going. And, thanks to AWS LF, it's scalable.
+
+If you were building this out as a production-ready bot, then you'd need to consider the following things:
+
+1. Extensive training of the API.AI agent (see their docs)
+2. Robust Python implementation (exception handling, logging etc.)
+3. Robust API protection (add an API key to your API GS and add this to the webhook)
+4. Avoiding bare (Mixpanel) tokens in the Python code (use the AWS key encryption service KMS)
+5. Thorough event/property definition for your Mixpanel events
+6. More comprehensive handling of the intents in your LF (optimized for AWS LF patterns)
+7. Structured maintenance of your bot responses (e.g. in a content management system)
+8. Implement A/B testing (lots of options to explore here)
+
+
+
 
 
 
