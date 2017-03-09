@@ -1,6 +1,10 @@
 ## API.AI Bot Handler AWS Lambda/Mixpanel
 
-This is a very rudimentary setup (i.e. minimal code for clarity and no error handling) to create a bot for Cisco Spark that relies on API.AI for NLP and Mixpanel for metrics. The flow is roughly as shown below.
+This is a **very rudimentary setup** (i.e. minimal code for clarity and no error handling) to create a bot for Cisco Spark that relies on API.AI for NLP and Mixpanel for metrics - i.e. a full "bot stack" for implementing bots in the wild. I couldn't find any such implementation documented already, plus the various examples (on Cisco/API.AI) often miss simple steps or gloss over any attempt to explain what's going on "under the hood" (which will make it easier for you to build on this example).
+
+My goal is to minimize the coding effort whilst ensuring that the set-up is scalable to production if you wish to pursue bots for your customers. 
+
+The data event flow is roughly as shown below.
 
 ![image](https://cloud.githubusercontent.com/assets/28526/23763455/8f72e4b4-04ae-11e7-81f0-0f9101984c9e.png)
 
