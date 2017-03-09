@@ -77,11 +77,11 @@ For your agent project on API.AI, visit the integrations tab on the left and ena
 
 What this step does is enable API.AI to register a [webhook](https://developer.ciscospark.com/webhooks-explained.html) on Spark for your bot. The webhook will send the events from your bot to the API.AI platform at an address something like: https://bots.api.ai/spark/GUID/webhook
 
-If you are curious about the webhook configuration (and in case you ever want to delete it) you can visit the interactive API documentation for webhooks on the Spark portal and paste in your Access Token to make a GET request to see the webhook registration that API.AI just made:
+If you are curious about the webhook configuration (and in case you ever want to delete it) you can visit the [interactive API documentation for webhooks](https://developer.ciscospark.com/endpoint-webhooks-get.html) on the Spark portal and paste in your Access Token to make a GET request to see the webhook registration that API.AI just made:
 
 ![screenshot 2017-03-09 10 17 15](https://cloud.githubusercontent.com/assets/28526/23764277/cffab428-04b1-11e7-9f08-a940f72b11f4.png)
 
-Now that you have completed this step, any interactions with your bot on Spark will be forward via this webhook to the API.AI system. The GUID in the API.AI address enables API.AI to associate all such messages with the agent you just created.
+Now that you have completed this step, any interactions with your bot on Spark will be forwarded via this webhook to the API.AI system. The GUID in the API.AI address enables API.AI to associate all such messages with the agent you just created.
 
 ### 4. Create an AWS Lambda Function ###
 
@@ -305,6 +305,7 @@ If you were building this out as a production-ready bot, then you'd need to cons
 7. Structured maintenance of your bot responses (e.g. in a content management system)
 8. Implement A/B testing (lots of options to explore here)
 
+For thos of you interested in creating a Cisco Spark bot entirely on AWS (i.e. without API.AI NLP) then I have a template for doing that, including an asynchronouse fan-out LF to offload the response and follow the "single unit of work" pattern for AWS Lambda. I plan to publish it soon along with a test harness for developing your LF locally and uploading automatically to AWS whenever you want to integrate.
 
 
 
