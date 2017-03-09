@@ -134,5 +134,65 @@ And we pass this to our own ```intent_handler``` to do something with it. In thi
 
 API.AI expects a certain JSON object as the returned response and that's what you see with ```BASIC_RESPONSE```. After overwriting the "speech" field with our return string, we merely return this entire object from the ```lambda_handler``` in order to respond to the inbound webhook request from API.AI.
 
+Note that we added a simple print statement that dumps the entire event object to the associated LF logs (stored on Cloud Watch). This is the best way to develop a LF because whenever things go wrong, you can go poke around in the detailed logs.
+
+To test your bot, you need to configure an example event payload. Simply copy the JSON object from above and paste it into the test event (via "Actions > Configure test event" dropdown menu).
+
+![screenshot 2017-03-09 10 56 41](https://cloud.githubusercontent.com/assets/28526/23765837/6b0a4a32-04b7-11e7-80e4-76caf481fd26.png)
+
 What we need to do now is to wire up the API.AI agent with our LF.
+
+### 5. Wire your API.AI agent to your LF ###
+
+We are going to tell API.AI how to send interpreted intents to our LF, but first we need to expose our LF to the internet. I'm assuming that you are interested eventually in deploying a bot for real, so we will take a little time here to expose your LF via the AWS API Gateway Service (GS). This is possibly the trickiest part of the process, but mostly because the GS is a bit awkward to configure if you're not used to it.
+
+Step 1 - Create an API and select "New API" - give it a name, say "bot".
+
+Step 2 - Add a "Method" to your API
+
+![screenshot 2017-03-09 11 01 37](https://cloud.githubusercontent.com/assets/28526/23766418/9392524a-04b9-11e7-855c-ae0200e1797e.png)
+
+We won't give the method a name as we just want to call the API from the '/' at the end of the URL. But let's say you were creating several bots, then you might use the botname here so your API webhooks end with a bot name, like '/salesbot'
+
+Step 3 - Add an action (HTTP Verb) to your method
+
+![screenshot 2017-03-09 11 01 49](https://cloud.githubusercontent.com/assets/28526/23766422/96b00d78-04b9-11e7-8740-60b67a8ccb5e.png)
+
+All we need is a POST for API.AI, so select POST.
+
+Step 4 - Configure your POST to route it to your LF
+
+![screenshot 2017-03-09 11 02 15](https://cloud.githubusercontent.com/assets/28526/23766436/a0bb8bda-04b9-11e7-995a-eb6414058190.png)
+
+Enter whatever name you used for your LF
+
+Step 5 - Deploy your API:
+
+![screenshot 2017-03-09 11 03 06](https://cloud.githubusercontent.com/assets/28526/23766444/a95b0c16-04b9-11e7-96d0-8a8003084518.png)
+
+Give it a deployment stage name, say "dev" (for development) for now.
+
+![screenshot 2017-03-09 11 03 23](https://cloud.githubusercontent.com/assets/28526/23766447/ad8ef414-04b9-11e7-96c8-a22581bbfbe9.png)
+
+That's it!
+
+It you visit the Dashboard link for your API, you will see the external URL to reach this method (that will pass the POST message body as ```event``` to your LF ```lambda_handler``` function).
+
+If you try to load the URL directly in your browser you will get a message like "Missing Authentication Token" which you can ignore because your browser is issuing a GET request (and you need to send a POST). If you want to explore how this works, you can use a tool like Postman and send a POST command to the URL whilst attaching the above JSON as the *raw* body (and selecting ```JSON (application/json)``` as the content type).
+
+Now you're ready to wire your agent to your LF (via this gateway API) by revisiting your agent on API.AI and selecting the "Fulfilment" tab on the left. Here you will see a place to insert your API:
+
+![screenshot 2017-03-09 11 24 30](https://cloud.githubusercontent.com/assets/28526/23766817/264ed9ea-04bb-11e7-8e1b-722d5f8c3dcf.png)
+
+One last thing to complete the wiring. You need to open each intent that you want to be handled by this webhook (i.e your LF) and select the "Use webhook" option under "Fulfillment" at the bottom of the intent page.
+
+![screenshot 2017-03-09 11 28 16](https://cloud.githubusercontent.com/assets/28526/23766953/99f1649e-04bb-11e7-8aa6-5e95e6475acb.png)
+
+
+
+
+
+
+
+
 
