@@ -1,9 +1,7 @@
 import hashlib
 from mixpanel import Mixpanel
 
-# ig - c597e56fd2b47884f28d4dcad87eb3b4 ("Bilbo project")
-# pg - 4a680b88791acf7f861ecf91230e7af8 ("Bilbo project")
-mp = Mixpanel('c597e56fd2b47884f28d4dcad87eb3b4')
+mp = Mixpanel('your-mixpanel-token-goes-here')
 
 BASIC_RESPONSE = {
     "speech": "Say something sensible",
