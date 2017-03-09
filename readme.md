@@ -188,9 +188,101 @@ One last thing to complete the wiring. You need to open each intent that you wan
 
 ![screenshot 2017-03-09 11 28 16](https://cloud.githubusercontent.com/assets/28526/23766953/99f1649e-04bb-11e7-8aa6-5e95e6475acb.png)
 
+### 6. Add Mixpanel Analytics ###
 
+#### A. Setting up Mixpanel and Integrating with your LF ####
 
+Mixpanel tends to emphasize behavioral analytics and so it supports a more event-friendly tracking model. There is no reason that this can't be extended to capture bot interactions. The basic "unit of interaction" for a bot would seem to be the recognition of an intent. Therefore, it makes sense to track intents as a kind of behavioral record that should tell us the kinds of interactions, problems and interests that users explore with our bot.
 
+First, you need to install the Mixpanel Python library. However, you need to do this in a way that enables us to upload the library with our LF code to AWS Lambda Service because the standard Python environment on AWS only extends to all of the standard Python libraries plus the Amazon SDK (Boto3).
+
+Create an empty folder (say with your bot name as the folder name) and then open a terminal at that same path.
+
+At the command line and **at the path where your LF code will reside on your machine**, use PIP to install it in the following way:
+
+>pip install Mixpanel -t .
+
+This should create the Mixpanel folder in your local folder. You will also see another folder (ending "-info") and perhaps a file called six.py
+
+Go to Mixpanel and create a project for your bot, say with the same name as your bot. Once created, there is nothing else for you to do except go to the "Project Settings" via the dropdown upper right (where your login name is displayed) and copy the Token field.
+
+Now create a file called ```lambda_function.py``` in your folder and paste in the code from the file of the same name in this repo. It is very similar to the code above, except that we've added a few things.
+
+First we import the library and then set up the Mixpanel object (using your Mixpanel token for this project):
+
+```python
+import Mixpfrom mixpanel import Mixpanel
+mp = Mixpanel('your-mixpanel-token-goes-here')
+```
+
+Then we use a simple function to send events to Mixpanel:
+
+```python
+def log_mixpanel_event(user_id, intent):
+    hashed_id = hashlib.sha256(user_id.encode('utf-8')).hexdigest()
+    mp.track(hashed_id, 'Intent Fired', {
+        'Intent name': intent
+    })
+```
+
+This code adds an event to Mixpanel by calling the Mixpanel.track() method. This accepts three arguments:
+* A distinct user ID (known as DistinctID on Mixpanel)
+* An event name (here called 'Intent Fired')
+* Event properties (that can be used to segment events in Mixpanel)
+
+It will be useful to tie bot users back to identities on the Spark platform so that we know a bit more about who is using our bot. To do this, we can access data about the Spark user who interacted with the bot via some additional JSON fields attached to the above JSON object. These fields are nested beneath an object called 'originalRequest' which is accessible via the inbound event to our LF:
+
+```python
+user_id = event['originalRequest']['data']['actorId']
+```
+
+Here we extract the user ID of the user who addressed the bot (known as the "actor" on Spark platform, hence "actorId"). Note that there are various useful fields in this augmented object, such as the room ID and even the user's public identity (e.g. email and/or display name). Of course, any of these fields can be added to the mixpanel 'Intent Fired' event as event properties.
+
+We used the extracted ID to pass in as the user's distinct ID on Mixpanel. We should use this every time we log an event so that we can segment events in Mixpanel by user (in the way Mixpanel expects to work).
+
+Note that in order to obscure the user's Spark ID, we are hashing the ID (using SHA256) to protect user identities whilst storing in a 3rd-party analytics system. You should understand the importance of storing customer data and assume the risk accordingly.
+
+#### B. Deploying LF with Mixpanel Integration ####
+
+You can't just paste your new Python code into the LF inside the AWS Lambda Console because you now need to deploy the Mixpanel library that you just installed locally with PIP.
+
+You will need to ZIP and upload your code with the library.
+
+To do this, navigate **inside** of the folder and compress the following files and folder ('mixpanel')
+
+> lambda_function.py
+
+> six.py
+
+> mixpanel
+
+Compress these three items. Do not compress the folder that contains these three items!!
+
+Now go to the AWS Lambda console for your function and select the code tab and then select "Upload a .ZIP file" via the "Code entry type" dropdown above the code window.
+
+![screenshot 2017-03-09 12 20 27](https://cloud.githubusercontent.com/assets/28526/23769023/cdff0320-04c2-11e7-8162-3d547c06fca8.png)
+
+The click "Save". Don't worry if the test fails because the JSON object you originally put into the test harness is lacking the augmented 'originalRequest' fields expected by your code.
+
+That's it! Now your code is wired up and ready to send events to mixpanel.
+
+#### C. Testing Mixpanel Integration ####
+
+This is the exciting part. Navigate to your Mixpanel project for the bot and open the "Live view" on the left had side navigation.
+
+![screenshot 2017-03-09 12 17 06](https://cloud.githubusercontent.com/assets/28526/23768917/713a0f4a-04c2-11e7-8b8d-77a9cf7aa211.png)
+
+Now start sending messages to your bot via your Spark client. Of course, my script assumes I created an intent called ```sales_intent``` that is triggered by phrases like "What are my sales today?"
+
+If I type this into Spark, I get the default feel-good answer from my script "Your sales are looking good", but I also see an event fire in the live view.
+
+For my example (not all shown here) I created a few intents with different names. If I open the Segmentation view inside of Mixpanel, I can now see these events and, furthermore, segment by Intent name (which was a property I sent in) to see which types of interaction are popular with my bot.
+
+![screenshot 2017-03-09 12 17 39](https://cloud.githubusercontent.com/assets/28526/23768926/76086616-04c2-11e7-8700-1bf8d1fba888.png)
+
+You can imagine feeding in a whole bunch of properties to make segmentation interesting. Also, if you set up more complex bot dialog interactions (multi-event) then you can go ahead and create funnels to see how far users get in traversing such dialogs.
+
+As an additional feature, if your bot sends interactions in the results, such as weblinks (e.g. to sales reports, help docs etc.) then you should consider instrumenting those destinations (websites) using Mixpanel and sending the events to the same project. This will enable you to view entire user journies from inside your bot interaction to external web-based (or other app) interactions.
 
 
 
